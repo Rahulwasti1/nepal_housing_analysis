@@ -1,0 +1,6 @@
+pandas
+numpy
+plotly
+jinja2
+ipython
+nbformat

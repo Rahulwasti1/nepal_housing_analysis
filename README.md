@@ -83,3 +83,5 @@ Simply double-click the file or drag it into a browser window.
 - All commands must be run from inside the project folder with the virtual environment active.
 - `dashboard.html` is fully self-contained — no internet connection or Python installation is needed to view it once generated.
 - Do not open `dashboard_template.html` directly in a browser — it will not render correctly.
+# nepal_housing_market_analysis
+# nepal_housing_market_analysis

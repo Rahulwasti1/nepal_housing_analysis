@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=1440"/>
+<title>Nepal Housing Market Analytics</title>
+<script>%%PLOTLY_JS%%</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#EEF1F8;
+  --ink:#0A0F1E;--ink2:#1E2A45;--ink3:#4A5578;--ink4:#8892A4;
+  --blue:#2563EB;--blue-l:#EFF6FF;
+  --green:#059669;--rose:#E11D48;--amber:#D97706;--purple:#7C3AED;
+  --sh:0 1px 3px rgba(10,15,30,0.06),0 4px 14px rgba(10,15,30,0.08);
+  --sh2:0 8px 32px rgba(10,15,30,0.13);
+  --glass:rgba(255,255,255,1.0);
+  --r:14px;--r2:10px;
+}
+html,body{width:100%;height:100vh;overflow:hidden;background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:var(--ink)}
+
+
+/* ── ROOT LAYOUT: sidebar | main ─────────────────────────────── */
+.root{
+  display:grid;
+  grid-template-columns:240px 1fr;
+  height:100vh;overflow:hidden;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+.sidebar{
+  display:flex;flex-direction:column;
+  background:rgba(255,255,255,0.97);
+  border-right:1px solid #E2E8F0;
+  box-shadow:var(--sh2);
+  overflow:hidden;z-index:10;
+}
+/* brand */
+.brand{padding:14px 14px 0;flex-shrink:0}
+.brand-row{display:flex;align-items:center;gap:11px;margin-bottom:10px}
+.brand-logo{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  box-shadow:0 4px 14px rgba(37,99,235,0.35);
+}
+.brand-text{flex:1;min-width:0}
+.brand-title{font-family:Georgia,'Times New Roman',serif;font-size:12.5px;font-weight:700;
+  color:var(--ink);line-height:1.25;margin-bottom:5px}
+.brand-pills{display:flex;gap:4px}
+.brand-pill{font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(37,99,235,0.1),rgba(124,58,237,0.07));
+  color:var(--blue);border:1px solid rgba(37,99,235,0.18);letter-spacing:.04em}
+.brand-divider{height:1px;background:linear-gradient(90deg,rgba(37,99,235,0.15),transparent);
+  margin-bottom:0}
+
+/* filter */
+.filter-sec{padding:12px 14px;border-bottom:1px solid rgba(37,99,235,0.08);flex-shrink:0}
+.sec-title{font-size:8.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--ink4);margin-bottom:8px}
+.fchip{
+  width:100%;display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:9px;border:1.5px solid transparent;
+  background:transparent;font-size:10.5px;font-weight:600;color:var(--ink3);
+  cursor:pointer;transition:background .1s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  margin-bottom:3px;text-align:left;
+}
+.fchip:hover{background:rgba(37,99,235,0.07);color:var(--ink)}
+.fchip.active{background:rgba(37,99,235,0.1);border-color:rgba(37,99,235,0.22);color:var(--blue)}
+.fchip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.fchip-count{margin-left:auto;font-size:9px;font-weight:700;
+  background:rgba(37,99,235,0.08);color:var(--blue);
+  padding:2px 6px;border-radius:20px}
+.fchip.active .fchip-count{background:var(--blue);color:white}
+
+/* nav */
+.nav-sec{flex:1;overflow-y:auto;padding:10px 10px;scrollbar-width:none}
+.nav-sec::-webkit-scrollbar{display:none}
+.nav-divider{font-size:8px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--ink4);padding:8px 6px 4px}
+.nav-item{
+  display:flex;align-items:center;gap:9px;padding:8px 8px;
+  border-radius:9px;cursor:pointer;transition:all .15s;
+  margin-bottom:2px;border:1px solid transparent;position:relative;
+}
+.nav-item:hover{background:rgba(37,99,235,0.06)}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(37,99,235,0.11),rgba(124,58,237,0.05));
+  border-color:rgba(37,99,235,0.18);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:25%;bottom:25%;
+  width:3px;border-radius:0 2px 2px 0;
+  background:linear-gradient(180deg,#2563EB,#7C3AED);
+}
+.nav-icon{width:26px;height:26px;border-radius:7px;display:flex;
+  align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+  background:rgba(255,255,255,0.6);transition:all .15s}
+.nav-item.active .nav-icon{background:linear-gradient(135deg,rgba(37,99,235,0.18),rgba(124,58,237,0.08))}
+.nav-label{flex:1;font-size:10px;font-weight:600;color:var(--ink3);line-height:1.2}
+.nav-item.active .nav-label{color:var(--blue)}
+.nav-badge{font-size:8px;font-weight:700;width:17px;height:17px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(37,99,235,0.08);color:var(--ink4);flex-shrink:0}
+.nav-item.active .nav-badge{background:var(--blue);color:white}
+
+/* sidebar footer */
+.sidebar-footer{padding:10px 14px;border-top:1px solid rgba(37,99,235,0.08);flex-shrink:0}
+.sdg-pill{display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,rgba(37,99,235,0.07),rgba(124,58,237,0.04));
+  border:1px solid rgba(37,99,235,0.14);border-radius:9px;padding:7px 10px}
+.sdg-text{font-size:9px;color:var(--ink3);font-weight:500;line-height:1.4}
+.sdg-text b{color:var(--blue)}
+
+/* ── MAIN ────────────────────────────────────────────────────── */
+.main{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+/* KPI strip — horizontal 4 cards */
+.kpi-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:10px;padding:12px 20px;flex-shrink:0;
+  background:transparent;
+  overflow:hidden;
+}
+.kpi-strip.hidden{
+  display:none!important;
+}
+.kpi-card{
+  background:var(--glass);
+  
+  border:1px solid rgba(255,255,255,0.9);
+  border-radius:var(--r2);box-shadow:var(--sh);
+  padding:11px 14px;display:flex;align-items:center;gap:12px;
+  transition:transform .2s,box-shadow .2s;cursor:default;
+  position:relative;overflow:hidden;
+}
+.kpi-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:var(--r2) var(--r2) 0 0;
+}
+.kpi-card.kc-blue::after{background:linear-gradient(90deg,#2563EB,#7C3AED)}
+.kpi-card.kc-rose::after{background:linear-gradient(90deg,#E11D48,#F97316)}
+.kpi-card.kc-amber::after{background:linear-gradient(90deg,#D97706,#F59E0B)}
+.kpi-card.kc-green::after{background:linear-gradient(90deg,#059669,#10B981)}
+.kpi-card:hover{box-shadow:var(--sh2)}
+.kpi-icon{width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:18px}
+.ki-blue{background:linear-gradient(135deg,rgba(37,99,235,0.14),rgba(37,99,235,0.06));
+  box-shadow:0 0 16px rgba(37,99,235,0.2)}
+.ki-rose{background:linear-gradient(135deg,rgba(225,29,72,0.14),rgba(225,29,72,0.06));
+  box-shadow:0 0 16px rgba(225,29,72,0.2)}
+.ki-amber{background:linear-gradient(135deg,rgba(217,119,6,0.14),rgba(217,119,6,0.06));
+  box-shadow:0 0 16px rgba(217,119,6,0.2)}
+.ki-green{background:linear-gradient(135deg,rgba(5,150,105,0.14),rgba(5,150,105,0.06));
+  box-shadow:0 0 16px rgba(5,150,105,0.2)}
+.kpi-body{flex:1;min-width:0}
+.kpi-label{font-size:8.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--ink4);margin-bottom:3px}
+.kpi-value{font-size:20px;font-weight:800;line-height:1;
+  letter-spacing:-.025em;color:var(--ink)}
+.kpi-value.gv-blue{text-shadow:0 0 14px rgba(37,99,235,0.22)}
+.kpi-value.gv-rose{text-shadow:0 0 14px rgba(225,29,72,0.22)}
+.kpi-value.gv-amber{text-shadow:0 0 14px rgba(217,119,6,0.22)}
+.kpi-value.gv-green{text-shadow:0 0 14px rgba(5,150,105,0.22)}
+.kpi-sub{font-size:8px;color:var(--ink4);margin-top:3px;line-height:1.3}
+
+/* chart area */
+.chart-area{flex:1;min-height:0;position:relative}
+.chart-view{
+  position:absolute;inset:0;
+  display:none;flex-direction:column;
+  padding:0 20px 10px;
+  overflow:hidden;
+}
+.chart-view.active{display:flex;}
+
+/* chart header inside view */
+.cv-header{flex-shrink:0;padding:8px 0 6px}
+.cv-crumb{font-size:9.5px;color:var(--ink4);font-weight:500;margin-bottom:4px;
+  display:flex;align-items:center;gap:5px}
+.cv-crumb span{color:var(--blue);font-weight:600}
+.cv-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cv-title{font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;
+  color:var(--ink);line-height:1.25;letter-spacing:-.015em;flex:1}
+.cv-badge{padding:4px 11px;border-radius:20px;font-size:9px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;margin-top:3px}
+.cb-green{background:linear-gradient(135deg,rgba(5,150,105,0.12),rgba(5,150,105,0.05));
+  color:#065F46;border:1px solid rgba(5,150,105,0.18)}
+.cb-blue{background:linear-gradient(135deg,rgba(37,99,235,0.12),rgba(37,99,235,0.05));
+  color:#1D4ED8;border:1px solid rgba(37,99,235,0.18)}
+.cb-orange{background:linear-gradient(135deg,rgba(234,88,12,0.12),rgba(234,88,12,0.05));
+  color:#C2410C;border:1px solid rgba(234,88,12,0.18)}
+.cb-purple{background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(124,58,237,0.05));
+  color:#6D28D9;border:1px solid rgba(124,58,237,0.18)}
+.cb-teal{background:linear-gradient(135deg,rgba(8,145,178,0.12),rgba(8,145,178,0.05));
+  color:#0E7490;border:1px solid rgba(8,145,178,0.18)}
+.cb-amber{background:linear-gradient(135deg,rgba(217,119,6,0.12),rgba(217,119,6,0.05));
+  color:#B45309;border:1px solid rgba(217,119,6,0.18)}
+.cb-rose{background:linear-gradient(135deg,rgba(225,29,72,0.12),rgba(225,29,72,0.05));
+  color:#BE123C;border:1px solid rgba(225,29,72,0.18)}
+
+/* insight bar */
+.cv-insight{
+  flex-shrink:0;margin:6px 0 8px;
+  padding:7px 14px;border-radius:9px;
+  background:linear-gradient(135deg,rgba(37,99,235,0.06),rgba(124,58,237,0.03));
+  border:1px solid rgba(37,99,235,0.11);
+  font-size:10.5px;color:var(--ink2);line-height:1.45;
+}
+.cv-insight b{color:var(--blue);font-weight:700}
+
+/* chart card */
+.cv-card{
+  flex:1;min-height:0;
+  background:#ffffff;
+  border:1px solid #E2E8F0;
+  border-radius:var(--r);box-shadow:var(--sh2);
+  overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+  transition:box-shadow .25s;
+}
+.cv-card:hover{box-shadow:0 16px 48px rgba(10,15,30,0.16)}
+.cv-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(135deg,rgba(255,255,255,0.35),transparent 55%);
+  pointer-events:none;z-index:1;
+}
+.cv-body{position:absolute;inset:0;display:flex;flex-direction:column}
+.cv-body>div{position:absolute;inset:0}
+
+/* bottom bar */
+.bottom-bar{
+  flex-shrink:0;padding:8px 20px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.arr-btn{
+  width:30px;height:30px;border-radius:8px;
+  border:1.5px solid rgba(37,99,235,0.2);
+  background:rgba(255,255,255,0.7);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;color:var(--ink3);
+}
+.arr-btn:hover{border-color:var(--blue);background:rgba(37,99,235,0.08);color:var(--blue)}
+.arr-btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.arr-btn svg{stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+.nav-arrows{display:flex;gap:6px;align-items:center}
+.progress-wrap{display:flex;align-items:center;gap:8px}
+.prog-label{font-size:10px;font-weight:600;color:var(--ink4)}
+.pdots{display:flex;gap:4px;align-items:center}
+.pdot{width:5px;height:5px;border-radius:50%;
+  background:rgba(37,99,235,0.18);transition:all .22s;cursor:pointer}
+.pdot.active{width:18px;border-radius:3px;
+  background:linear-gradient(90deg,#2563EB,#7C3AED)}
+.kbd-hint{font-size:9px;color:var(--ink4);display:flex;align-items:center;gap:4px}
+.kbd{background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.1);
+  border-radius:4px;padding:1px 5px;font-size:9px;font-weight:600;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="root">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-row">
+      <div class="brand-logo">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="10" fill="url(#lg1)"/>
+          <defs>
+            <linearGradient id="lg1" x1="0" y1="0" x2="36" y2="36">
+              <stop offset="0%" stop-color="#2563EB"/>
+              <stop offset="100%" stop-color="#7C3AED"/>
+            </linearGradient>
+          </defs>
+          <path d="M18 6L7 15H10V28H26V15H29L18 6Z" fill="white" opacity="0.95"/>
+          <rect x="13" y="20" width="2.5" height="8" rx="0.8" fill="#1D4ED8" opacity="0.9"/>
+          <rect x="17" y="17.5" width="2.5" height="10.5" rx="0.8" fill="#1D4ED8" opacity="0.9"/>
+          <rect x="21" y="21.5" width="2.5" height="6.5" rx="0.8" fill="#1D4ED8" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">Nepal Housing<br/>Analytics</div>
+        
+      </div>
+    </div>
+    <div class="brand-divider"></div>
+  </div>
+
+  <div class="filter-sec">
+    <div class="sec-title">Filter by District</div>
+    <button class="fchip active" id="fc-all" onclick="setFilt('all')">
+      <span class="fchip-dot" style="background:linear-gradient(135deg,#2563EB,#7C3AED)"></span>
+      All Districts<span class="fchip-count" id="count-all">2,128</span>
+    </button>
+    <button class="fchip" id="fc-ktm" onclick="setFilt('Kathmandu')">
+      <span class="fchip-dot" style="background:#D55E00"></span>
+      Kathmandu<span class="fchip-count">1,388</span>
+    </button>
+    <button class="fchip" id="fc-lal" onclick="setFilt('Lalitpur')">
+      <span class="fchip-dot" style="background:#0072B2"></span>
+      Lalitpur<span class="fchip-count">685</span>
+    </button>
+    <button class="fchip" id="fc-bkt" onclick="setFilt('Bhaktapur')">
+      <span class="fchip-dot" style="background:#E69F00"></span>
+      Bhaktapur<span class="fchip-count">55</span>
+    </button>
+  </div>
+
+  <div class="nav-sec">
+    <div class="nav-divider">Visualization</div>
+    <div class="nav-item active" id="nav-0" onclick="goTo(0)">
+      <div class="nav-icon">📊</div><div class="nav-label">Price Distribution</div><div class="nav-badge">1</div>
+    </div>
+    <div class="nav-item" id="nav-1" onclick="goTo(1)">
+      <div class="nav-icon">🏙</div><div class="nav-label">Top Areas</div><div class="nav-badge">2</div>
+    </div>
+    <div class="nav-item" id="nav-2" onclick="goTo(2)">
+      <div class="nav-icon">🛣</div><div class="nav-label">Road vs Price</div><div class="nav-badge">3</div>
+    </div>
+    <div class="nav-item" id="nav-3" onclick="goTo(3)">
+      <div class="nav-icon">📈</div><div class="nav-label">Construction Trend</div><div class="nav-badge">4</div>
+    </div>
+    <div class="nav-item" id="nav-4" onclick="goTo(4)">
+      <div class="nav-icon">🔵</div><div class="nav-label">Land vs Price</div><div class="nav-badge">5</div>
+    </div>
+    <div class="nav-item" id="nav-5" onclick="goTo(5)">
+      <div class="nav-icon">✨</div><div class="nav-label">Amenities vs Price</div><div class="nav-badge">6</div>
+    </div>
+    <div class="nav-item" id="nav-6" onclick="goTo(6)">
+      <div class="nav-icon">🍩</div><div class="nav-label">Market Segments</div><div class="nav-badge">7</div>
+    </div>
+    <div class="nav-item" id="nav-7" onclick="goTo(7)">
+      <div class="nav-icon">🌡</div><div class="nav-label">Price Heatmap</div><div class="nav-badge">8</div>
+    </div>
+
+    <div class="nav-divider">Advanced Visualizations</div>
+    <div class="nav-item" id="nav-8" onclick="goTo(8)">
+      <div class="nav-icon">🗺</div><div class="nav-label">Budget Map Explorer</div><div class="nav-badge">9</div>
+    </div>
+    <div class="nav-item" id="nav-9" onclick="goTo(9)">
+      <div class="nav-icon">☀️</div><div class="nav-label">Market Structure</div><div class="nav-badge">10</div>
+    </div>
+    <div class="nav-item" id="nav-10" onclick="goTo(10)">
+      <div class="nav-icon">🧊</div><div class="nav-label">3D Value Analysis</div><div class="nav-badge">11</div>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sdg-pill">
+      <span style="font-size:18px">🌍</span>
+      <div class="sdg-text"><b>SDG 11</b> — Sustainable Cities<br/>& Communities</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- KPI Strip — horizontal -->
+  <div class="kpi-strip">
+    <div class="kpi-card kc-blue">
+      <div class="kpi-icon ki-blue">💰</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Median House Price</div>
+        <div class="kpi-value gv-blue">{{ kpis.median_price }}</div>
+        <div class="kpi-sub">Nepal · 2024</div>
+      </div>
+    </div>
+    <div class="kpi-card kc-rose">
+      <div class="kpi-icon ki-rose">🏠</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Affordability Rate</div>
+        <div class="kpi-value gv-rose">{{ kpis.afford_rate }}</div>
+        <div class="kpi-sub">{{ kpis.afford_sub }}</div>
+      </div>
+    </div>
+    <div class="kpi-card kc-amber">
+      <div class="kpi-icon ki-amber">📊</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Luxury Premium Gap</div>
+        <div class="kpi-value gv-amber">{{ kpis.luxury_gap }}</div>
+        <div class="kpi-sub">{{ kpis.luxury_gap_sub }}</div>
+      </div>
+    </div>
+    <div class="kpi-card kc-green">
+      <div class="kpi-icon ki-green">📈</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Post-Quake Growth</div>
+        <div class="kpi-value gv-green">{{ kpis.post_quake }}</div>
+        <div class="kpi-sub">Construction after 2072 B.S</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart Area -->
+  <div class="chart-area">
+
+    <!-- VIZ 1 -->
+    <div class="chart-view active" id="view-0">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Price Distribution</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">How Are House Prices Distributed Across the Valley?</div>
+          <div class="cv-badge cb-green">📊 Histogram</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 Only <b>{{ kpis.afford_rate }}</b> of listings are below Rs.2Cr — well below SDG 11's 20% target. The valley median of <b>{{ kpis.median_price }}</b> places most housing out of reach for median-income households.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c1"></div></div></div>
+    </div>
+
+    <!-- VIZ 2 -->
+    <div class="chart-view" id="view-1">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Area Comparison</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">Which Areas Are Most Expensive and Most Affordable per Aana?</div>
+          <div class="cv-badge cb-purple">🏙 Ranked Bar</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 The gap between most expensive and most affordable areas is <b>3–4× per Aana</b>. Affordable localities exist in peripheral zones — only visible through data, not informal market knowledge.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c2"></div></div></div>
+    </div>
+
+    <!-- VIZ 3 -->
+    <div class="chart-view" id="view-2">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Infrastructure Impact</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">Does Road Width Drive Price per Aana Across Districts?</div>
+          <div class="cv-badge cb-blue">🛣 Bar + Line</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 Road infrastructure creates a <b>50–125% price premium</b> from Narrow to Highway access. Standard access (10–13ft) is the minimum width to reach the valley median price.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c3"></div></div></div>
+    </div>
+
+    <!-- VIZ 4 -->
+    <div class="chart-view" id="view-3">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Temporal Analysis</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">How Has Construction Activity Evolved Across Districts?</div>
+          <div class="cv-badge cb-orange">📈 Line Chart</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 Post-earthquake construction surged <b>{{ kpis.post_quake }}</b> after 2072 B.S. COVID caused a brief dip at 2076 B.S. — but recovery was faster, confirming structural housing demand remains strong.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c4"></div></div></div>
+    </div>
+
+    <!-- VIZ 5 -->
+    <div class="chart-view" id="view-4">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Land Value</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">Does More Land Mean Higher Price — Are You Overpaying per Aana?</div>
+          <div class="cv-badge cb-teal">🔵 Bubble Scatter</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 Bigger land does not guarantee better value. Small-land Lalitpur plots price higher than large-land Bhaktapur plots. <b>Bubble size = price per Aana</b> — larger bubbles signal overpaying risk.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c5"></div></div></div>
+    </div>
+
+    <!-- VIZ 6 -->
+    <div class="chart-view" id="view-5">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Amenity Impact</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">Do More Amenities Mean Higher House Price Across Districts?</div>
+          <div class="cv-badge cb-amber">✨ Grouped Bar</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 Price rises from None to Premium tier but <b>plateaus at Luxury (11+)</b>. Adding excessive amenities beyond Premium produces no meaningful price return in any district.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c6"></div></div></div>
+    </div>
+
+    <!-- VIZ 7 -->
+    <div class="chart-view" id="view-6">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Market Segments</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">What Proportion of Housing Falls in Each Segment per District?</div>
+          <div class="cv-badge cb-purple">🍩 Donut Chart</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 No district is providing affordable housing at scale. Even Bhaktapur — the most affordable — has over 58% listings in Mid-Range. The valley is moving away from affordable supply year by year.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c7"></div></div></div>
+    </div>
+
+    <!-- VIZ 8 -->
+    <div class="chart-view" id="view-7">
+      <div class="cv-header">
+        <div class="cv-crumb">Visualization <span>/ Price Heatmap</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">How Did Price per Aana Change Across Districts and Years?</div>
+          <div class="cv-badge cb-blue">🌡 Heatmap</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 Price per Aana has been <b>rising steadily since 2072 B.S.</b> with no reversal. The earthquake triggered a permanent upward price shift — buyers post-2072 pay consistently more per Aana.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c8"></div></div></div>
+    </div>
+
+    <!-- VIZ 10 — Home Buyer Budget Simulator -->
+    <div class="chart-view" id="view-8">
+      <div class="cv-header">
+        <div class="cv-crumb">Advanced Visualizations <span>/ Geospatial · Budget Map</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">What Can I Buy With My Budget — Areas Within Your Price Range</div>
+          <div class="cv-badge cb-blue">🏠 Budget Simulator</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 <b>Select your budget</b> — the chart instantly shows every area you can afford, their road quality, and bubble size shows land area. Wider road + larger bubble = better value for money.</div>
+      <div class="cv-card" style="position:relative;overflow:hidden">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+#viz10-wrap{position:absolute;inset:0;display:flex;flex-direction:column;background:#F8FAFC;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#viz10-ctrl{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 12px;background:white;border-bottom:1px solid #E2E8F0;flex-wrap:wrap}
+.v10-label{font-size:9.5px;font-weight:700;color:#8892A4;text-transform:uppercase;letter-spacing:.08em;margin-right:2px}
+.v10-btn{padding:5px 11px;border-radius:20px;border:1.5px solid #E2E8F0;background:white;color:#4A5578;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.v10-btn:hover{border-color:#2563EB;color:#2563EB}
+.v10-btn.active{background:linear-gradient(135deg,#2563EB,#7C3AED);border-color:transparent;color:white}
+.v10-sep{width:1px;height:18px;background:#E2E8F0;flex-shrink:0}
+.v10-mode{display:flex;gap:2px;background:#F0F4F8;border-radius:14px;padding:2px}
+.v10-mode-btn{padding:4px 9px;border-radius:11px;border:none;background:transparent;color:#8892A4;font-size:9px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.v10-mode-btn.active{background:white;color:#2563EB;box-shadow:0 1px 3px rgba(37,99,235,0.15)}
+#viz10-map{flex:1;min-height:0}
+#viz10-legend{position:absolute;bottom:14px;left:12px;z-index:1000;background:rgba(255,255,255,0.96);border:1px solid #E2E8F0;border-radius:10px;padding:9px 12px;font-size:10px;color:#4A5578;min-width:140px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+#viz10-legend .lt{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#8892A4;margin-bottom:6px}
+#viz10-legend .li{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+#viz10-legend .ld{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+#viz10-stats{position:absolute;bottom:14px;right:12px;z-index:1000;background:rgba(255,255,255,0.96);border:1px solid #E2E8F0;border-radius:10px;padding:9px 12px;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+#viz10-stats .sr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+#viz10-stats .sl{font-size:8.5px;color:#8892A4;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+#viz10-stats .sv{font-size:11.5px;font-weight:700;color:#1A2B45}
+.sv.blue{color:#2563EB}.sv.green{color:#059669}.sv.amber{color:#D97706}
+.leaflet-popup-content-wrapper{background:white!important;border:1px solid #E2E8F0!important;border-radius:12px!important;box-shadow:0 4px 20px rgba(0,0,0,0.12)!important}
+.leaflet-popup-tip{background:white!important}
+.leaflet-popup-content{margin:10px 12px!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;color:#1A2B45!important}
+.pc-name{font-size:14px;font-weight:800;margin-bottom:2px}
+.pc-dist{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pc-item{background:#F8FAFC;border-radius:8px;padding:7px 9px;border:1px solid #E2E8F0}
+.pc-lbl{font-size:8px;color:#8892A4;text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:2px}
+.pc-val{font-size:13px;font-weight:800}
+.pc-bar-wrap{margin-top:8px}
+.pc-bar-lbl{font-size:8.5px;color:#8892A4;display:flex;justify-content:space-between;margin-bottom:3px}
+.pc-bar-bg{background:#E2E8F0;border-radius:3px;height:5px;overflow:hidden}
+.pc-bar-fill{height:100%;border-radius:3px}
+</style>
+<div id="viz10-wrap">
+  <div id="viz10-ctrl">
+    <span class="v10-label">Budget</span>
+    <button class="v10-btn" data-b="1.5">≤Rs.1.5Cr</button>
+    <button class="v10-btn active" data-b="2.5">≤Rs.2.5Cr</button>
+    <button class="v10-btn" data-b="3.5">≤Rs.3.5Cr</button>
+    <button class="v10-btn" data-b="5">≤Rs.5Cr</button>
+    <button class="v10-btn" data-b="99">All Areas</button>
+    <div class="v10-sep"></div>
+    <div class="v10-mode">
+      <button class="v10-mode-btn active" data-m="price">Pricing</button>
+      <button class="v10-mode-btn" data-m="invest">Investment</button>
+      <button class="v10-mode-btn" data-m="road">Roads</button>
+    </div>
+  </div>
+  <div id="viz10-map"></div>
+  <div id="viz10-legend"></div>
+  <div id="viz10-stats">
+    <div class="sr"><span class="sl">Visible Areas</span><span class="sv blue" id="v10-cnt">—</span></div>
+    <div class="sr"><span class="sl">Avg Price</span><span class="sv amber" id="v10-price">—</span></div>
+    <div class="sr"><span class="sl">Avg Road</span><span class="sv green" id="v10-road">—</span></div>
+    <div class="sr"><span class="sl">Listings</span><span class="sv" id="v10-lst">—</span></div>
+  </div>
+</div>
+<script>
+(function(){
+  const DATA=[{"Location_area": "Bafal", "Location_district": "Kathmandu", "Count": 25, "Median_Price": 2.85, "Min_Price": 2.03, "Max_Price": 7.0, "Median_PPA": 0.73, "Median_Land": 4.0, "Median_Road": 13.0, "Median_Amen": 0.0, "Pre": 0.0, "Post": 13.0, "Build_growth": 165.0, "lat": 27.7117, "lng": 85.295, "s_afford": 5.61, "s_growth": 5.03, "s_road": 1.25, "s_depth": 0.95, "invest_raw": 34.43, "invest_score": 61.3}, {"Location_area": "Balkot", "Location_district": "Bhaktapur", "Count": 8, "Median_Price": 2.88, "Min_Price": 2.5, "Max_Price": 5.25, "Median_PPA": 0.73, "Median_Land": 5.0, "Median_Road": 16.5, "Median_Amen": 1.0, "Pre": 1.0, "Post": 5.0, "Build_growth": 220.0, "lat": 27.6783, "lng": 85.3917, "s_afford": 5.56, "s_growth": 6.51, "s_road": 5.62, "s_depth": 0.14, "invest_raw": 47.285, "invest_score": 84.2}, {"Location_area": "Baluwakhani", "Location_district": "Kathmandu", "Count": 15, "Median_Price": 2.6, "Min_Price": 1.7, "Max_Price": 3.8, "Median_PPA": 0.73, "Median_Land": 3.2, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 3.0, "Post": 3.0, "Build_growth": 0.0, "lat": 27.7567, "lng": 85.3467, "s_afford": 5.54, "s_growth": 0.6, "s_road": 1.25, "s_depth": 0.47, "invest_raw": 22.185000000000002, "invest_score": 39.5}, {"Location_area": "Baluwatar", "Location_district": "Kathmandu", "Count": 7, "Median_Price": 5.0, "Min_Price": 2.25, "Max_Price": 7.15, "Median_PPA": 1.02, "Median_Land": 6.0, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 1.0, "Post": 3.0, "Build_growth": 165.0, "lat": 27.7183, "lng": 85.3333, "s_afford": 1.22, "s_growth": 5.03, "s_road": 1.25, "s_depth": 0.09, "invest_raw": 19.54, "invest_score": 34.8}, {"Location_area": "Bansbari", "Location_district": "Kathmandu", "Count": 15, "Median_Price": 5.2, "Min_Price": 3.6, "Max_Price": 6.5, "Median_PPA": 0.72, "Median_Land": 6.2, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 3.0, "Post": 9.0, "Build_growth": 200.0, "lat": 27.7433, "lng": 85.3383, "s_afford": 5.72, "s_growth": 5.97, "s_road": 1.25, "s_depth": 0.47, "invest_raw": 36.15, "invest_score": 64.4}, {"Location_area": "Basundhara", "Location_district": "Kathmandu", "Count": 7, "Median_Price": 4.0, "Min_Price": 2.85, "Max_Price": 7.5, "Median_PPA": 0.92, "Median_Land": 5.0, "Median_Road": 14.0, "Median_Amen": 0.0, "Pre": 1.0, "Post": 2.0, "Build_growth": 165.0, "lat": 27.7483, "lng": 85.335, "s_afford": 2.77, "s_growth": 5.03, "s_road": 2.5, "s_depth": 0.09, "invest_raw": 27.315, "invest_score": 48.6}, {"Location_area": "Bhaisepati", "Location_district": "Lalitpur", "Count": 123, "Median_Price": 3.8, "Min_Price": 1.4, "Max_Price": 7.5, "Median_PPA": 0.93, "Median_Land": 4.2, "Median_Road": 15.0, "Median_Amen": 2.0, "Pre": 18.0, "Post": 50.0, "Build_growth": 177.8, "lat": 27.6494, "lng": 85.3185, "s_afford": 2.66, "s_growth": 5.37, "s_road": 3.75, "s_depth": 5.59, "invest_raw": 41.96, "invest_score": 74.7}, {"Location_area": "Bhangal", "Location_district": "Kathmandu", "Count": 39, "Median_Price": 2.95, "Min_Price": 1.35, "Max_Price": 6.9, "Median_PPA": 0.68, "Median_Land": 4.0, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 8.0, "Post": 17.0, "Build_growth": 112.5, "lat": 27.7397, "lng": 85.2858, "s_afford": 6.35, "s_growth": 3.62, "s_road": 1.25, "s_depth": 1.61, "invest_raw": 34.445, "invest_score": 61.3}, {"Location_area": "Budhanilkantha", "Location_district": "Kathmandu", "Count": 130, "Median_Price": 4.0, "Min_Price": 1.45, "Max_Price": 7.5, "Median_PPA": 0.82, "Median_Land": 5.0, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 25.0, "Post": 61.0, "Build_growth": 144.0, "lat": 27.7897, "lng": 85.3603, "s_afford": 4.31, "s_growth": 4.47, "s_road": 1.25, "s_depth": 5.92, "invest_raw": 39.06999999999999, "invest_score": 69.6}, {"Location_area": "Dhapakhel", "Location_district": "Lalitpur", "Count": 16, "Median_Price": 2.82, "Min_Price": 1.45, "Max_Price": 4.3, "Median_PPA": 0.78, "Median_Land": 4.0, "Median_Road": 18.0, "Median_Amen": 1.0, "Pre": 2.0, "Post": 6.0, "Build_growth": 182.0, "lat": 27.66, "lng": 85.335, "s_afford": 4.8, "s_growth": 5.49, "s_road": 7.5, "s_depth": 0.52, "invest_raw": 47.915, "invest_score": 85.3}, {"Location_area": "Dhapasi", "Location_district": "Kathmandu", "Count": 54, "Median_Price": 3.22, "Min_Price": 1.0, "Max_Price": 7.5, "Median_PPA": 0.68, "Median_Land": 4.2, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 14.0, "Post": 19.0, "Build_growth": 35.7, "lat": 27.7467, "lng": 85.3343, "s_afford": 6.34, "s_growth": 1.56, "s_road": 1.25, "s_depth": 2.32, "invest_raw": 30.685000000000002, "invest_score": 54.6}, {"Location_area": "Ganesh Chowk", "Location_district": "Kathmandu", "Count": 15, "Median_Price": 3.5, "Min_Price": 2.25, "Max_Price": 7.0, "Median_PPA": 0.88, "Median_Land": 5.0, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 1.0, "Post": 8.0, "Build_growth": 165.0, "lat": 27.72, "lng": 85.32, "s_afford": 3.43, "s_growth": 5.03, "s_road": 1.25, "s_depth": 0.47, "invest_raw": 26.930000000000003, "invest_score": 48.0}, {"Location_area": "Golfutar", "Location_district": "Kathmandu", "Count": 25, "Median_Price": 3.45, "Min_Price": 1.6, "Max_Price": 6.5, "Median_PPA": 0.85, "Median_Land": 4.0, "Median_Road": 14.0, "Median_Amen": 1.0, "Pre": 9.0, "Post": 9.0, "Build_growth": 0.0, "lat": 27.75, "lng": 85.35, "s_afford": 3.81, "s_growth": 0.6, "s_road": 2.5, "s_depth": 0.95, "invest_raw": 21.08, "invest_score": 37.5}, {"Location_area": "Gwarko", "Location_district": "Lalitpur", "Count": 13, "Median_Price": 2.7, "Min_Price": 1.55, "Max_Price": 4.75, "Median_PPA": 0.87, "Median_Land": 3.1, "Median_Road": 13.0, "Median_Amen": 3.0, "Pre": 2.0, "Post": 5.0, "Build_growth": 182.0, "lat": 27.67, "lng": 85.3467, "s_afford": 3.49, "s_growth": 5.49, "s_road": 1.25, "s_depth": 0.38, "invest_raw": 28.080000000000002, "invest_score": 50.0}, {"Location_area": "Harisiddhi", "Location_district": "Lalitpur", "Count": 9, "Median_Price": 2.7, "Min_Price": 2.35, "Max_Price": 3.5, "Median_PPA": 0.9, "Median_Land": 3.1, "Median_Road": 20.0, "Median_Amen": 4.0, "Pre": 3.0, "Post": 5.0, "Build_growth": 66.7, "lat": 27.63, "lng": 85.3533, "s_afford": 3.06, "s_growth": 2.39, "s_road": 10.0, "s_depth": 0.19, "invest_raw": 40.535000000000004, "invest_score": 72.2}, {"Location_area": "Hattiban", "Location_district": "Lalitpur", "Count": 34, "Median_Price": 3.12, "Min_Price": 2.0, "Max_Price": 7.5, "Median_PPA": 0.9, "Median_Land": 4.0, "Median_Road": 13.5, "Median_Amen": 1.0, "Pre": 5.0, "Post": 8.0, "Build_growth": 60.0, "lat": 27.66, "lng": 85.31, "s_afford": 3.05, "s_growth": 2.21, "s_road": 1.88, "s_depth": 1.37, "invest_raw": 22.115000000000002, "invest_score": 39.4}, {"Location_area": "Hattigaunda", "Location_district": "Kathmandu", "Count": 30, "Median_Price": 3.65, "Min_Price": 2.3, "Max_Price": 7.5, "Median_PPA": 0.78, "Median_Land": 5.1, "Median_Road": 14.0, "Median_Amen": 1.0, "Pre": 7.0, "Post": 14.0, "Build_growth": 100.0, "lat": 27.72, "lng": 85.295, "s_afford": 4.9, "s_growth": 3.28, "s_road": 2.5, "s_depth": 1.18, "invest_raw": 31.509999999999998, "invest_score": 56.1}, {"Location_area": "Hepali Height", "Location_district": "Kathmandu", "Count": 18, "Median_Price": 3.42, "Min_Price": 2.25, "Max_Price": 7.0, "Median_PPA": 0.84, "Median_Land": 4.15, "Median_Road": 14.0, "Median_Amen": 1.0, "Pre": 3.0, "Post": 10.0, "Build_growth": 233.3, "lat": 27.7267, "lng": 85.3217, "s_afford": 4.0, "s_growth": 6.86, "s_road": 2.5, "s_depth": 0.62, "invest_raw": 36.64000000000001, "invest_score": 65.2}, {"Location_area": "Imadol", "Location_district": "Lalitpur", "Count": 216, "Median_Price": 2.7, "Min_Price": 1.4, "Max_Price": 7.0, "Median_PPA": 0.84, "Median_Land": 3.2, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 37.0, "Post": 99.0, "Build_growth": 167.6, "lat": 27.6644, "lng": 85.3469, "s_afford": 3.92, "s_growth": 5.1, "s_road": 1.25, "s_depth": 10.0, "invest_raw": 47.635, "invest_score": 84.8}, {"Location_area": "Kalanki", "Location_district": "Kathmandu", "Count": 17, "Median_Price": 2.55, "Min_Price": 1.3, "Max_Price": 4.5, "Median_PPA": 0.67, "Median_Land": 4.0, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 4.0, "Post": 9.0, "Build_growth": 125.0, "lat": 27.6967, "lng": 85.2817, "s_afford": 6.55, "s_growth": 3.95, "s_road": 1.25, "s_depth": 0.57, "invest_raw": 33.79, "invest_score": 60.2}, {"Location_area": "Kapan", "Location_district": "Kathmandu", "Count": 48, "Median_Price": 2.65, "Min_Price": 1.12, "Max_Price": 4.55, "Median_PPA": 0.72, "Median_Land": 3.3, "Median_Road": 13.0, "Median_Amen": 0.0, "Pre": 8.0, "Post": 26.0, "Build_growth": 225.0, "lat": 27.7558, "lng": 85.3758, "s_afford": 5.75, "s_growth": 6.64, "s_road": 1.25, "s_depth": 2.04, "invest_raw": 41.05499999999999, "invest_score": 73.1}, {"Location_area": "Khumaltar", "Location_district": "Lalitpur", "Count": 19, "Median_Price": 4.0, "Min_Price": 2.1, "Max_Price": 7.0, "Median_PPA": 0.91, "Median_Land": 5.0, "Median_Road": 14.0, "Median_Amen": 2.0, "Pre": 5.0, "Post": 7.0, "Build_growth": 40.0, "lat": 27.6672, "lng": 85.3553, "s_afford": 2.96, "s_growth": 1.67, "s_road": 2.5, "s_depth": 0.66, "invest_raw": 20.625, "invest_score": 36.7}, {"Location_area": "Koteshwor", "Location_district": "Kathmandu", "Count": 7, "Median_Price": 4.15, "Min_Price": 2.75, "Max_Price": 6.0, "Median_PPA": 1.04, "Median_Land": 4.0, "Median_Road": 20.0, "Median_Amen": 1.0, "Pre": 0.0, "Post": 2.0, "Build_growth": 165.0, "lat": 27.6883, "lng": 85.3567, "s_afford": 1.0, "s_growth": 5.03, "s_road": 10.0, "s_depth": 0.09, "invest_raw": 40.755, "invest_score": 72.6}, {"Location_area": "Kusunti", "Location_district": "Lalitpur", "Count": 13, "Median_Price": 2.75, "Min_Price": 2.35, "Max_Price": 4.25, "Median_PPA": 0.75, "Median_Land": 4.0, "Median_Road": 15.0, "Median_Amen": 1.0, "Pre": 1.0, "Post": 3.0, "Build_growth": 182.0, "lat": 27.6667, "lng": 85.3183, "s_afford": 5.31, "s_growth": 5.49, "s_road": 3.75, "s_depth": 0.38, "invest_raw": 39.79, "invest_score": 70.9}, {"Location_area": "Lazimpat", "Location_district": "Kathmandu", "Count": 6, "Median_Price": 4.1, "Min_Price": 1.55, "Max_Price": 6.0, "Median_PPA": 0.98, "Median_Land": 4.2, "Median_Road": 12.0, "Median_Amen": 0.0, "Pre": 2.0, "Post": 1.0, "Build_growth": 165.0, "lat": 27.7167, "lng": 85.32, "s_afford": 1.92, "s_growth": 5.03, "s_road": 0.0, "s_depth": 0.05, "invest_raw": 18.435000000000002, "invest_score": 32.8}, {"Location_area": "Lubhu", "Location_district": "Lalitpur", "Count": 13, "Median_Price": 1.8, "Min_Price": 1.33, "Max_Price": 5.9, "Median_PPA": 0.7, "Median_Land": 3.0, "Median_Road": 13.0, "Median_Amen": 3.0, "Pre": 2.0, "Post": 8.0, "Build_growth": 182.0, "lat": 27.64, "lng": 85.3767, "s_afford": 6.05, "s_growth": 5.49, "s_road": 1.25, "s_depth": 0.38, "invest_raw": 35.76, "invest_score": 63.7}, {"Location_area": "Maharajgunj", "Location_district": "Kathmandu", "Count": 5, "Median_Price": 6.0, "Min_Price": 2.4, "Max_Price": 7.5, "Median_PPA": 0.86, "Median_Land": 7.0, "Median_Road": 14.0, "Median_Amen": 1.0, "Pre": 1.0, "Post": 3.0, "Build_growth": 165.0, "lat": 27.7333, "lng": 85.3333, "s_afford": 3.7, "s_growth": 5.03, "s_road": 2.5, "s_depth": 0.0, "invest_raw": 29.925000000000004, "invest_score": 53.3}, {"Location_area": "Mandikhatar", "Location_district": "Kathmandu", "Count": 28, "Median_Price": 3.76, "Min_Price": 1.85, "Max_Price": 7.5, "Median_PPA": 0.82, "Median_Land": 4.25, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 9.0, "Post": 7.0, "Build_growth": -22.2, "lat": 27.765, "lng": 85.345, "s_afford": 4.28, "s_growth": 0.0, "s_road": 1.25, "s_depth": 1.09, "invest_raw": 18.145, "invest_score": 32.3}, {"Location_area": "Nakhipot", "Location_district": "Lalitpur", "Count": 24, "Median_Price": 2.85, "Min_Price": 2.0, "Max_Price": 6.0, "Median_PPA": 0.8, "Median_Land": 3.62, "Median_Road": 15.5, "Median_Amen": 1.0, "Pre": 3.0, "Post": 10.0, "Build_growth": 233.3, "lat": 27.665, "lng": 85.31, "s_afford": 4.58, "s_growth": 6.86, "s_road": 4.38, "s_depth": 0.9, "invest_raw": 43.64, "invest_score": 77.7}, {"Location_area": "Nakkhu", "Location_district": "Lalitpur", "Count": 22, "Median_Price": 3.18, "Min_Price": 2.3, "Max_Price": 6.4, "Median_PPA": 0.78, "Median_Land": 4.1, "Median_Road": 14.25, "Median_Amen": 2.0, "Pre": 6.0, "Post": 8.0, "Build_growth": 33.3, "lat": 27.65, "lng": 85.32, "s_afford": 4.83, "s_growth": 1.49, "s_road": 2.81, "s_depth": 0.81, "invest_raw": 26.860000000000003, "invest_score": 47.8}, {"Location_area": "Pasikot", "Location_district": "Kathmandu", "Count": 33, "Median_Price": 3.3, "Min_Price": 2.25, "Max_Price": 7.5, "Median_PPA": 0.72, "Median_Land": 5.0, "Median_Road": 14.0, "Median_Amen": 1.0, "Pre": 8.0, "Post": 16.0, "Build_growth": 100.0, "lat": 27.7833, "lng": 85.4333, "s_afford": 5.75, "s_growth": 3.28, "s_road": 2.5, "s_depth": 1.33, "invest_raw": 34.36, "invest_score": 61.2}, {"Location_area": "Rudreshwor", "Location_district": "Kathmandu", "Count": 13, "Median_Price": 4.2, "Min_Price": 1.05, "Max_Price": 6.8, "Median_PPA": 0.75, "Median_Land": 5.1, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 3.0, "Post": 5.0, "Build_growth": 66.7, "lat": 27.7117, "lng": 85.3383, "s_afford": 5.31, "s_growth": 2.39, "s_road": 1.25, "s_depth": 0.38, "invest_raw": 25.790000000000003, "invest_score": 45.9}, {"Location_area": "Samakhusi", "Location_district": "Kathmandu", "Count": 9, "Median_Price": 3.2, "Min_Price": 2.5, "Max_Price": 3.9, "Median_PPA": 0.8, "Median_Land": 3.5, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 1.0, "Post": 3.0, "Build_growth": 165.0, "lat": 27.7383, "lng": 85.3117, "s_afford": 4.56, "s_growth": 5.03, "s_road": 1.25, "s_depth": 0.19, "invest_raw": 29.76, "invest_score": 53.0}, {"Location_area": "Sanepa", "Location_district": "Lalitpur", "Count": 8, "Median_Price": 6.35, "Min_Price": 4.5, "Max_Price": 7.5, "Median_PPA": 1.1, "Median_Land": 5.05, "Median_Road": 14.5, "Median_Amen": 3.0, "Pre": 1.0, "Post": 2.0, "Build_growth": 182.0, "lat": 27.6817, "lng": 85.3117, "s_afford": 0.0, "s_growth": 5.49, "s_road": 3.12, "s_depth": 0.14, "invest_raw": 21.805000000000003, "invest_score": 38.8}, {"Location_area": "Satdobato", "Location_district": "Lalitpur", "Count": 10, "Median_Price": 4.5, "Min_Price": 2.5, "Max_Price": 7.0, "Median_PPA": 0.75, "Median_Land": 5.15, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 1.0, "Post": 2.0, "Build_growth": 182.0, "lat": 27.6617, "lng": 85.3383, "s_afford": 5.25, "s_growth": 5.49, "s_road": 1.25, "s_depth": 0.24, "invest_raw": 33.08, "invest_score": 58.9}, {"Location_area": "Sitapaila", "Location_district": "Kathmandu", "Count": 66, "Median_Price": 3.0, "Min_Price": 1.2, "Max_Price": 7.0, "Median_PPA": 0.73, "Median_Land": 4.05, "Median_Road": 13.0, "Median_Amen": 2.0, "Pre": 5.0, "Post": 28.0, "Build_growth": 350.0, "lat": 27.7184, "lng": 85.2796, "s_afford": 5.61, "s_growth": 10.0, "s_road": 1.25, "s_depth": 2.89, "invest_raw": 50.735, "invest_score": 90.3}, {"Location_area": "Sukedhara", "Location_district": "Kathmandu", "Count": 23, "Median_Price": 3.9, "Min_Price": 1.6, "Max_Price": 7.0, "Median_PPA": 0.75, "Median_Land": 4.0, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 3.0, "Post": 13.0, "Build_growth": 333.3, "lat": 27.745, "lng": 85.325, "s_afford": 5.31, "s_growth": 9.55, "s_road": 1.25, "s_depth": 0.85, "invest_raw": 44.63, "invest_score": 79.5}, {"Location_area": "Sunakothi", "Location_district": "Lalitpur", "Count": 10, "Median_Price": 3.75, "Min_Price": 1.25, "Max_Price": 5.15, "Median_PPA": 0.73, "Median_Land": 5.5, "Median_Road": 20.0, "Median_Amen": 3.0, "Pre": 3.0, "Post": 4.0, "Build_growth": 33.3, "lat": 27.6333, "lng": 85.3117, "s_afford": 5.6, "s_growth": 1.49, "s_road": 10.0, "s_depth": 0.24, "invest_raw": 46.004999999999995, "invest_score": 81.9}, {"Location_area": "Sundarbasti", "Location_district": "Kathmandu", "Count": 18, "Median_Price": 3.18, "Min_Price": 2.0, "Max_Price": 3.95, "Median_PPA": 0.78, "Median_Land": 4.0, "Median_Road": 13.0, "Median_Amen": 0.0, "Pre": 5.0, "Post": 8.0, "Build_growth": 60.0, "lat": 27.7267, "lng": 85.3017, "s_afford": 4.78, "s_growth": 2.21, "s_road": 1.25, "s_depth": 0.62, "invest_raw": 24.23, "invest_score": 43.1}, {"Location_area": "Syuchatar", "Location_district": "Kathmandu", "Count": 19, "Median_Price": 2.45, "Min_Price": 2.05, "Max_Price": 3.9, "Median_PPA": 0.68, "Median_Land": 4.0, "Median_Road": 13.0, "Median_Amen": 0.0, "Pre": 3.0, "Post": 7.0, "Build_growth": 133.3, "lat": 27.705, "lng": 85.28, "s_afford": 6.3, "s_growth": 4.18, "s_road": 1.25, "s_depth": 0.66, "invest_raw": 33.794999999999995, "invest_score": 60.2}, {"Location_area": "Taukhel", "Location_district": "Lalitpur", "Count": 5, "Median_Price": 3.0, "Min_Price": 2.5, "Max_Price": 3.8, "Median_PPA": 0.71, "Median_Land": 4.2, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 0.0, "Post": 4.0, "Build_growth": 182.0, "lat": 27.635, "lng": 85.36, "s_afford": 5.84, "s_growth": 5.49, "s_road": 1.25, "s_depth": 0.0, "invest_raw": 34.370000000000005, "invest_score": 61.2}, {"Location_area": "Thaiba", "Location_district": "Lalitpur", "Count": 12, "Median_Price": 2.88, "Min_Price": 1.25, "Max_Price": 5.0, "Median_PPA": 0.73, "Median_Land": 4.3, "Median_Road": 20.0, "Median_Amen": 1.0, "Pre": 2.0, "Post": 5.0, "Build_growth": 182.0, "lat": 27.635, "lng": 85.3533, "s_afford": 5.59, "s_growth": 5.49, "s_road": 10.0, "s_depth": 0.33, "invest_raw": 56.155, "invest_score": 100.0}, {"Location_area": "Thankot", "Location_district": "Kathmandu", "Count": 44, "Median_Price": 1.48, "Min_Price": 0.82, "Max_Price": 3.25, "Median_PPA": 0.44, "Median_Land": 3.1, "Median_Road": 13.0, "Median_Amen": 0.0, "Pre": 8.0, "Post": 21.0, "Build_growth": 162.5, "lat": 27.7072, "lng": 85.2178, "s_afford": 10.0, "s_growth": 4.96, "s_road": 1.25, "s_depth": 1.85, "invest_raw": 49.225, "invest_score": 87.7}, {"Location_area": "Tikathali", "Location_district": "Lalitpur", "Count": 33, "Median_Price": 2.3, "Min_Price": 0.98, "Max_Price": 4.25, "Median_PPA": 0.78, "Median_Land": 3.0, "Median_Road": 13.0, "Median_Amen": 0.0, "Pre": 3.0, "Post": 24.0, "Build_growth": 350.0, "lat": 27.6644, "lng": 85.37, "s_afford": 4.85, "s_growth": 10.0, "s_road": 1.25, "s_depth": 1.33, "invest_raw": 45.334999999999994, "invest_score": 80.7}, {"Location_area": "Tokha", "Location_district": "Kathmandu", "Count": 10, "Median_Price": 2.78, "Min_Price": 1.0, "Max_Price": 4.5, "Median_PPA": 0.69, "Median_Land": 4.0, "Median_Road": 13.0, "Median_Amen": 1.0, "Pre": 0.0, "Post": 7.0, "Build_growth": 165.0, "lat": 27.765, "lng": 85.32, "s_afford": 6.15, "s_growth": 5.03, "s_road": 1.25, "s_depth": 0.24, "invest_raw": 34.63, "invest_score": 61.7}];
+  const DC={Kathmandu:'#D55E00',Lalitpur:'#0072B2',Bhaktapur:'#E69F00'};
+  let map=null, markers=[], budget=2.5, mode='price', initialized=false;
+
+  function color(d,m){
+    if(m==='price'){const p=d.Median_PPA;return p<0.60?'#059669':p<0.75?'#2563EB':p<0.90?'#D97706':'#DC2626';}
+    if(m==='invest'){const s=d.invest_score;return s>=40?'#059669':s>=30?'#2563EB':s>=20?'#D97706':'#DC2626';}
+    const r=d.Median_Road;return r>=18?'#7C3AED':r>=15?'#2563EB':r>=13?'#059669':'#DC2626';
+  }
+  const LEGENDS={
+    price:'<div class="lt">Pricing — Price per Aana</div><div class="li"><div class="ld" style="background:#059669"></div>Below Rs.0.60Cr — Affordable</div><div class="li"><div class="ld" style="background:#2563EB"></div>Rs.0.60–0.75Cr — Mid-Range</div><div class="li"><div class="ld" style="background:#D97706"></div>Rs.0.75–0.90Cr — Premium</div><div class="li"><div class="ld" style="background:#DC2626"></div>Above Rs.0.90Cr — Luxury</div>',
+    invest:'<div class="lt">Investment Score (0–100)</div><div class="li"><div class="ld" style="background:#059669"></div>40+ — Strong Potential</div><div class="li"><div class="ld" style="background:#2563EB"></div>30–40 — Good Potential</div><div class="li"><div class="ld" style="background:#D97706"></div>20–30 — Watch List</div><div class="li"><div class="ld" style="background:#DC2626"></div>Below 20 — Cautious</div>',
+    road:'<div class="lt">Road Width</div><div class="li"><div class="ld" style="background:#7C3AED"></div>18ft or more — Highway</div><div class="li"><div class="ld" style="background:#2563EB"></div>15–18ft — Wide</div><div class="li"><div class="ld" style="background:#059669"></div>13–15ft — Standard</div><div class="li"><div class="ld" style="background:#DC2626"></div>Below 13ft — Narrow</div>'
+  };
+
+  function renderMarkers(){
+    markers.forEach(m=>map.removeLayer(m));
+    markers=[];
+    const vis=DATA.filter(d=>d.Median_Price<=budget);
+    document.getElementById('viz10-legend').innerHTML=LEGENDS[mode];
+    vis.forEach(d=>{
+      const c=color(d,mode);
+      const sz=Math.max(8,Math.min(Math.sqrt(d.Count)*3.2,28));
+      const m=L.circleMarker([d.lat,d.lng],{radius:sz,fillColor:c,color:'white',weight:2,fillOpacity:0.85});
+      const sc=d.invest_score,sm=48.4;
+      const sc_c=sc>=40?'#059669':sc>=30?'#2563EB':sc>=20?'#D97706':'#DC2626';
+      m.bindPopup(`
+        <div class="pc-name" style="color:${DC[d.Location_district]}">${d.Location_area}</div>
+        <div class="pc-dist" style="color:${DC[d.Location_district]}">${d.Location_district}</div>
+        <div class="pc-grid">
+          <div class="pc-item"><div class="pc-lbl">Median Price</div><div class="pc-val" style="color:#D97706">Rs.${d.Median_Price.toFixed(2)}Cr</div></div>
+          <div class="pc-item"><div class="pc-lbl">Price/Aana</div><div class="pc-val" style="color:#2563EB">Rs.${d.Median_PPA.toFixed(2)}Cr</div></div>
+          <div class="pc-item"><div class="pc-lbl">Road Width</div><div class="pc-val" style="color:#059669">${d.Median_Road.toFixed(0)}ft</div></div>
+          <div class="pc-item"><div class="pc-lbl">Land Area</div><div class="pc-val" style="color:#7C3AED">${d.Median_Land.toFixed(1)} Aana</div></div>
+          <div class="pc-item"><div class="pc-lbl">Listings</div><div class="pc-val">${d.Count}</div></div>
+          <div class="pc-item"><div class="pc-lbl">Build Growth</div><div class="pc-val" style="color:#059669">+${d.Build_growth.toFixed(0)}%</div></div>
+        </div>
+        <div class="pc-bar-wrap">
+          <div class="pc-bar-lbl"><span>Invest Score</span><span style="color:${sc_c};font-weight:800">${sc.toFixed(1)}/50</span></div>
+          <div class="pc-bar-bg"><div class="pc-bar-fill" style="width:${(sc/sm*100).toFixed(0)}%;background:${sc_c}"></div></div>
+        </div>`,{maxWidth:270});
+      m.addTo(map);markers.push(m);
+    });
+    if(vis.length>0){
+      document.getElementById('v10-cnt').textContent=vis.length+' areas';
+      document.getElementById('v10-price').textContent='Rs.'+(vis.reduce((a,b)=>a+b.Median_Price,0)/vis.length).toFixed(2)+'Cr';
+      document.getElementById('v10-road').textContent=(vis.reduce((a,b)=>a+b.Median_Road,0)/vis.length).toFixed(0)+'ft avg';
+      document.getElementById('v10-lst').textContent=vis.reduce((a,b)=>a+b.Count,0)+' listings';
+    } else {document.getElementById('v10-cnt').textContent='0 areas';}
+  }
+
+  // Init map ONLY when called (lazy)
+  window.initViz10=function(){
+    if(initialized){map.invalidateSize();return;}
+    initialized=true;
+    map=L.map('viz10-map',{zoomControl:false,attributionControl:false}).setView([27.70,85.34],12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+    L.control.zoom({position:'bottomleft'}).addTo(map);
+    renderMarkers();
+    setTimeout(()=>map.invalidateSize(),100);
+  };
+
+  document.querySelectorAll('.v10-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    document.querySelectorAll('.v10-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    budget=parseFloat(btn.dataset.b);
+    if(map)renderMarkers();
+  }));
+  document.querySelectorAll('.v10-mode-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    document.querySelectorAll('.v10-mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    mode=btn.dataset.m;
+    if(map)renderMarkers();
+  }));
+})();
+</script>
+</div>
+    </div>
+
+    <div class="chart-view" id="view-9">
+      <div class="cv-header">
+        <div class="cv-crumb">Advanced Visualizations <span>/ Sunburst · Hierarchical Market Structure</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">How Is the Housing Market Structured — District → Segment → Area</div>
+          <div class="cv-badge cb-purple">☀️ Sunburst Chart</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 <b>Drag to rotate · Click any segment to drill down · Click centre to zoom out.</b> Ring 1 = District. Ring 2 = Price Segment with price range label (🟢 Affordable <2Cr · 🔵 Mid-Range 2–3Cr · 🟠 Premium 3–5Cr · 🔴 Luxury 5Cr+). Ring 3 = Top areas. Sector width = number of listings.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c10"></div></div></div>
+    </div>
+
+    <div class="chart-view" id="view-10">
+      <div class="cv-header">
+        <div class="cv-crumb">Advanced Visualizations <span>/ 3D Scatter · Multi-Variable Analysis</span></div>
+        <div class="cv-title-row">
+          <div class="cv-title">Does Bigger Land Mean Better Value — 3D View of Land · Price · Price-per-Aana</div>
+          <div class="cv-badge cb-green">🧊 3D Scatter Plot</div>
+        </div>
+      </div>
+      <div class="cv-insight">💡 <b>Drag to rotate · scroll to zoom · hover for stats.</b> X = Land Area, Y = House Price, Z = Price per Aana. Bubble size = road width. Areas in the <b>top-left-low-Z corner</b> offer the most land at lowest price/Aana — best value. Clusters reveal whether districts follow different land-value patterns.</div>
+      <div class="cv-card"><div class="cv-body"><div id="c11"></div></div></div>
+    </div>
+
+    </div><!-- end chart-area -->
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="progress-wrap">
+      <span class="prog-label" id="prog-label">1 / 11</span>
+      <div class="pdots">
+        <div class="pdot active" onclick="goTo(0)"></div>
+        <div class="pdot" onclick="goTo(1)"></div>
+        <div class="pdot" onclick="goTo(2)"></div>
+        <div class="pdot" onclick="goTo(3)"></div>
+        <div class="pdot" onclick="goTo(4)"></div>
+        <div class="pdot" onclick="goTo(5)"></div>
+        <div class="pdot" onclick="goTo(6)"></div>
+        <div class="pdot" onclick="goTo(7)"></div>
+        <div class="pdot" onclick="goTo(8)"></div>
+        <div class="pdot" onclick="goTo(9)"></div>
+        <div class="pdot" onclick="goTo(10)"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+const CHARTS = {
+  fig1:%%CHART_FIG1%%,
+  fig2:%%CHART_FIG2%%,
+  fig3:%%CHART_FIG3%%,
+  fig4:%%CHART_FIG4%%,
+  fig5:%%CHART_FIG5%%,
+  fig6:%%CHART_FIG6%%,
+  fig7:%%CHART_FIG7%%,
+  fig8:%%CHART_FIG8%%,
+  fig9:%%CHART_FIG9%%,
+  fig10:%%CHART_FIG10%%,
+  fig11:%%CHART_FIG11%%,
+  fig12:%%CHART_FIG12%%
+};
+const CFG={responsive:true,displayModeBar:true,
+  modeBarButtonsToRemove:['toImage','sendDataToCloud','lasso2d'],displaylogo:false};
+const EL_IDS    =['c1','c2','c3','c4','c5','c6','c7','c8','skip','c10','c11'];
+const CHART_IDS =['fig1','fig2','fig3','fig4','fig5','fig6','fig7','fig8','skip','fig10','fig11'];
+const DIST_NAMES=['Kathmandu','Lalitpur','Bhaktapur'];
+const TOTAL=11;
+let cur=0,rendered={},currentFilter='all';
+
+function renderChart(idx){
+  // View 8 is the map (no Plotly). Views 9,10 are Plotly charts.
+  if(idx===8)return;
+  if(EL_IDS[idx]==='skip')return;
+  const elId=EL_IDS[idx],chartId=CHART_IDS[idx];
+  const el=document.getElementById(elId);
+  if(!el||!CHARTS[chartId])return;
+
+  if(!rendered[elId]){
+    Plotly.newPlot(el,CHARTS[chartId].data,CHARTS[chartId].layout,CFG);
+    rendered[elId]=true;
+    let resizeTimer=null;
+    new ResizeObserver(()=>{
+      clearTimeout(resizeTimer);
+      resizeTimer=setTimeout(()=>Plotly.relayout(el,{autosize:true}),150);
+    }).observe(el);
+    // Drag-to-rotate for sunburst (c10)
+    if(elId==='c10') addSunburstRotation(el);
+  }else{
+    requestAnimationFrame(()=>Plotly.relayout(el,{autosize:true}));
+  }
+  if(currentFilter!=='all')applyFilter(elId,currentFilter);
+}
+
+function addSunburstRotation(el){
+  let dragging=false,startX=0,startRot=0,curRot=0;
+  el.addEventListener('mousedown',e=>{
+    const t=e.target.tagName.toLowerCase();
+    if(t==='path'||t==='text'||t==='tspan'){
+      // Allow plotly click events on slices; only drag on bg
+      const cls=(e.target.getAttribute('class')||'');
+      if(!cls.includes('bg'))return;
+    }
+    dragging=true; startX=e.clientX; startRot=curRot;
+    el.style.cursor='grabbing'; e.preventDefault();
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    curRot=startRot+(e.clientX-startX)*0.6;
+    Plotly.restyle(el,{rotation:curRot},[0]);
+  });
+  window.addEventListener('mouseup',()=>{
+    if(dragging){dragging=false; el.style.cursor='grab';}
+  });
+  el.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){dragging=true;startX=e.touches[0].clientX;startRot=curRot;}
+  },{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(!dragging||e.touches.length!==1)return;
+    curRot=startRot+(e.touches[0].clientX-startX)*0.6;
+    Plotly.restyle(el,{rotation:curRot},[0]);
+  },{passive:true});
+  el.addEventListener('touchend',()=>{dragging=false;},{passive:true});
+  el.style.cursor='grab';
+}
+
+function applyFilter(elId,dist){
+  const el=document.getElementById(elId);
+  if(!el||!el.data||el.data.length===0)return;
+  if(['c7','c8','c10','c11','c12'].includes(elId))return;
+  const vis=el.data.map(t=>{
+    if(dist==='all')return true;
+    if(!DIST_NAMES.includes(t.name))return true;
+    return t.name===dist?true:'legendonly';
+  });
+  Plotly.restyle(el,{visible:vis});
+}
+
+function goTo(index){
+  if(index===cur)return;
+  document.getElementById(`view-${cur}`).classList.remove('active');
+  document.getElementById(`nav-${cur}`).classList.remove('active');
+  cur=index;
+  document.getElementById(`view-${cur}`).classList.add('active');
+  document.getElementById(`nav-${cur}`).classList.add('active');
+  document.querySelectorAll('.pdot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  document.getElementById('prog-label').textContent=`${cur+1} / ${TOTAL}`;
+  const kpiStrip=document.querySelector('.kpi-strip');
+  if(kpiStrip)kpiStrip.classList.toggle('hidden',cur===8);
+  // View 8: lazy init map
+  if(cur===8 && typeof initViz10==='function') setTimeout(initViz10,50);
+  renderChart(cur);
+}
+
+function prevChart(){if(cur>0)goTo(cur-1);}
+function nextChart(){if(cur<TOTAL-1)goTo(cur+1);}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')nextChart();
+  if(e.key==='ArrowLeft')prevChart();
+});
+
+function setFilt(dist){
+  currentFilter=dist;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+  const map={all:'fc-all',Kathmandu:'fc-ktm',Lalitpur:'fc-lal',Bhaktapur:'fc-bkt'};
+  document.getElementById(map[dist]).classList.add('active');
+  EL_IDS.forEach(elId=>{if(rendered[elId])applyFilter(elId,dist);});
+}
+
+window.addEventListener('load',()=>{
+  renderChart(0);
+});
+</script>
+</body>
+</html>
